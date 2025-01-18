@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Jogo } from "../entities/jogo.entity";
 import { DeleteResult, ILike, Repository } from "typeorm";
+import { CategoriaService } from "../../categoria/services/categoria.service";
 
 
 @Injectable()
@@ -9,13 +10,18 @@ export class JogoService {
 
     constructor(
         @InjectRepository(Jogo)
-        private jogoRepository: Repository<Jogo>
+        private jogoRepository: Repository<Jogo>,
+        private categoriaService: CategoriaService
         //adeicione depois o relacionamento aqui
     ) { }
 
     //Criando metodo para Listar Todos
     async findAll(): Promise<Jogo[]> {
-        return this.jogoRepository.find(); //SELECT * FROM tb_postagens;
+        return this.jogoRepository.find({
+            relations: {
+                categoria: true
+            }
+        }); 
     }
     //Criando metodo para Procurar por ID
     async findById(id: number): Promise<Jogo> {
@@ -23,6 +29,9 @@ export class JogoService {
         const jogo = await this.jogoRepository.findOne({
             where: {
                 id
+            },
+            relations: { 
+                categoria: true
             }
         });
 
@@ -36,6 +45,9 @@ export class JogoService {
         return this.jogoRepository.find({
             where: {
                 name: ILike(`%${name}%`) //ILike = case insensitive
+            },
+            relations: { 
+                categoria: true
             }
         });
     }
@@ -46,6 +58,9 @@ export class JogoService {
 
     //Criando metodo para Salvar o Jogo
     async create(jogo: Jogo): Promise<Jogo> {
+
+        await this.categoriaService.findById(jogo.categoria.id)
+
         return await this.jogoRepository.save(jogo);
     }
 
@@ -53,6 +68,8 @@ export class JogoService {
     async update(jogo: Jogo): Promise<Jogo>{
 
         await this.findById(jogo.id)
+
+        await this.categoriaService.findById(jogo.categoria.id)
 
         return await this.jogoRepository.save(jogo);
     }

@@ -2,6 +2,7 @@ import { Transform, TransformFnParams } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { NumericTransformer } from "../../util/numericTransformer";
+import { Categoria } from "../../categoria/entities/categoria.entity";
 
 @Entity({name: "tb_jogos"}) 
 export class Jogo{
@@ -34,6 +35,12 @@ export class Jogo{
     @IsNotEmpty() 
     @Column({length: 500, nullable: false}) 
     image_path: string
+
+
+    @ManyToOne(() => Categoria, (categoria) => categoria.jogo, {
+        onDelete: "CASCADE"
+    })
+    categoria: Categoria;
 
 
 
