@@ -19,7 +19,8 @@ export class JogoService {
     async findAll(): Promise<Jogo[]> {
         return this.jogoRepository.find({
             relations: {
-                categoria: true
+                categoria: true,
+                usuario: true
             }
         }); 
     }
@@ -31,7 +32,8 @@ export class JogoService {
                 id
             },
             relations: { 
-                categoria: true
+                categoria: true,
+                usuario: true
             }
         });
 
@@ -47,7 +49,8 @@ export class JogoService {
                 name: ILike(`%${name}%`) //ILike = case insensitive
             },
             relations: { 
-                categoria: true
+                categoria: true,
+                usuario: true
             }
         });
     }
@@ -59,6 +62,7 @@ export class JogoService {
             },
             relations: {
                 categoria: true, // Carrega a relação com a categoria
+                usuario: true
             },
             order: {
                 value: 'ASC', // Ordena pelo preço em ordem crescente
