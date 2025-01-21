@@ -47,9 +47,6 @@ export class CategoriaService {
         });
     }
 
-    // async findByValue(value: number): Promise<Jogo[]>{
-
-    // }
 
     //Criando metodo para Salvar o Jogo
     async create(categoria: Categoria): Promise<Categoria> {

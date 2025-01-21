@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Jogo } from "../entities/jogo.entity";
-import { DeleteResult, ILike, Repository } from "typeorm";
+import { DeleteResult, ILike, LessThan, LessThanOrEqual, Repository } from "typeorm";
 import { CategoriaService } from "../../categoria/services/categoria.service";
 
 
@@ -52,9 +52,27 @@ export class JogoService {
         });
     }
 
-    // async findByValue(value: number): Promise<Jogo[]>{
+    async findByLessValue(value: number): Promise<Jogo[]> {
+        const jogos = await this.jogoRepository.find({
+            where: {
+                value: LessThanOrEqual(value),
+            },
+            relations: {
+                categoria: true, // Carrega a relação com a categoria
+            },
+            order: {
+                value: 'ASC', // Ordena pelo preço em ordem crescente
+            },
+        });
 
-    // }
+        if (!jogos || jogos.length === 0) {
+            throw new HttpException(
+                'Nenhum jogo encontrado com o preço informado',
+                HttpStatus.NOT_FOUND,
+            );
+        }
+        return jogos
+    }
 
     //Criando metodo para Salvar o Jogo
     async create(jogo: Jogo): Promise<Jogo> {
