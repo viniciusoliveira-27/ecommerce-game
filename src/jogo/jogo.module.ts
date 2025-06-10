@@ -1,15 +1,16 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { Jogo } from "./entities/jogo.entity";
 import { JogoController } from "./controllers/jogo.controller";
 import { JogoService } from "./services/jogo.service";
-import { CategoriaModule } from "../categoria/categoria.module";
+import { MongooseModule } from "@nestjs/mongoose";
+import { Jogo, JogoSchema } from "./schemas/jogo.schema";
 
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Jogo]), CategoriaModule],
+    imports: [MongooseModule.forFeature([
+        { name: Jogo.name, schema: JogoSchema}
+    ])],
     providers: [JogoService],
     controllers: [JogoController],
-    exports: [TypeOrmModule]
+    exports: [JogoService, MongooseModule] 
 })
 export class JogoModule{}

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put, Query } from "@nestjs/common";
 import { JogoService } from "../services/jogo.service";
-import { Jogo } from "../entities/jogo.entity";
+import { Jogo } from "../schemas/jogo.schema";
+import { CreateJogoDto, UpdateJogoDto } from "../dto/jogo.dto";
 
 @Controller("/jogos")
 export class JogoController {
@@ -18,8 +19,7 @@ export class JogoController {
 
     @Get("/:id")
     @HttpCode(HttpStatus.OK)
-    //tem q transformar a string em Numero
-    findById(@Param("id", ParseIntPipe) id: number): Promise<Jogo> {
+    findById(@Param("id") id: string): Promise<Jogo> {
         return this.jogoService.findById(id);
     }
 
@@ -29,27 +29,21 @@ export class JogoController {
         return this.jogoService.findByName(name);
     }
 
-    @Get("/value/:value")
-    @HttpCode(HttpStatus.OK)
-    findByLessValue(@Param("value", ParseIntPipe) value: number): Promise<Jogo[]> {
-        return this.jogoService.findByLessValue(value);
-    }
-
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    create(@Body() jogo: Jogo): Promise<Jogo> {
-        return this.jogoService.create(jogo);
+    create(@Body() dto: CreateJogoDto): Promise<Jogo> {
+        return this.jogoService.create(dto);
     }
 
     @Put()
     @HttpCode(HttpStatus.OK)
-    update(@Body() jogo: Jogo): Promise<Jogo> {
-        return this.jogoService.update(jogo);
+    update(@Body() id: string, dto: UpdateJogoDto): Promise<Jogo> {
+        return this.jogoService.update(id, dto);
     }
 
     @Delete("/:id")
     @HttpCode(HttpStatus.NO_CONTENT)
-    delete(@Param("id", ParseIntPipe) id: number) {
+    delete(@Param("id") id: string) {
         return this.jogoService.delete(id);
     }
 

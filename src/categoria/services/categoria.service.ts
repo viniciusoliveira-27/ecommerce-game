@@ -1,69 +1,59 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { DeleteResult, ILike, Repository } from "typeorm";
-import { Categoria } from "../entities/categoria.entity";
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose'; // Importa InjectModel do NestJS Mongoose
+import { Model } from 'mongoose'; // Importa Model do Mongoose
+import { Categoria, CategoriaDocument } from '../schemas/categoria.schema'; // Ajusta o caminho do esquema
+import { CreateCategoriaDto } from '../dto/create-categoria.dto';
+import { UpdateCategoriaDto } from '../dto/update-categoria.dto';
 
 @Injectable()
 export class CategoriaService {
 
     constructor(
-        @InjectRepository(Categoria)
-        private categoriaRepository: Repository<Categoria>
+        @InjectModel(Categoria.name)
+        private categoriaModel: Model<CategoriaDocument>
     ) { }
 
     async findAll(): Promise<Categoria[]> {
-        return this.categoriaRepository.find({
-            relations: {
-                jogo: true
-            }
-        });
+        return await this.categoriaModel.find().exec(); //populando o relacionamento com jogos
     }
 
-    async findById(id: number): Promise<Categoria> {
-        //dispara dentro do BD SELECT*FROM tb_jogos WHERE id = ?;
-        const categoria = await this.categoriaRepository.findOne({
-            where: {
-                id
-            },
-            relations: { //habilitando o relacionamento na consulta
-                jogo: true
-            }
-        });
-
-        if (!categoria)
+    async findById(id: string): Promise<Categoria> {
+        const categoria = await this.categoriaModel.findById(id).exec(); 
+            if (!categoria)
             throw new HttpException('Categoria não encontrada', HttpStatus.NOT_FOUND)
 
         return categoria;
     }
     //Criando metodo para Procurar por Nome do jogo
-    async findByCategory(category: string): Promise<Categoria[]> {
-        return this.categoriaRepository.find({
-            where: {
-                category: ILike(`%${category}%`) //ILike = case insensitive
-            },
-            relations: { //habilitando o relacionamento na consulta
-                jogo: true
-            }
-        });
-    }
+    async findByCategory(categoria: string): Promise<Categoria[]> {
+    // Usa expressão regular ($regex) com a opção 'i' para case-insensitive
+    // e popula o campo virtual 'jogo'
+    return await this.categoriaModel
+      .find({ categoria: { $regex: categoria, $options: 'i' } })
+      .exec();
+  }
 
 
-    //Criando metodo para Salvar o Jogo
-    async create(categoria: Categoria): Promise<Categoria> {
-        return await this.categoriaRepository.save(categoria);
-    }
+    //Criando metodo para Salvar Categoria
+    async create(dto: CreateCategoriaDto): Promise<Categoria> {
+    const categoria = new this.categoriaModel(dto);
+    return categoria.save();
+  }
 
     //Criando metodo para Atualizar dados dos jogos
-    async update(categoria: Categoria): Promise<Categoria> {
-
-        await this.findById(categoria.id)
-
-        return await this.categoriaRepository.save(categoria);
+    async update(dto: UpdateCategoriaDto) : Promise<Categoria> {
+        const categoria = await this.categoriaModel.findByIdAndUpdate(dto.id, dto, { new: true }).exec();
+        if (!categoria) {
+            throw new HttpException('Categoria não encontrada', HttpStatus.NOT_FOUND);
+        }
+        return categoria;
     }
 
-    async delete(id: number): Promise<DeleteResult> {
-        await this.findById(id)
-        return await this.categoriaRepository.delete(id);
+    async delete(id: string): Promise<void> {
+        const result = await this.categoriaModel.findByIdAndDelete(id).exec();
+        if (!result) {
+            throw new HttpException('Erro ao deletar: Categoria não encontrada', HttpStatus.NOT_FOUND);
+        }
     }
 
 

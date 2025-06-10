@@ -1,26 +1,31 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Jogo } from './jogo/entities/jogo.entity';
-import { JogoModule } from './jogo/jogo.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { MongooseModule } from '@nestjs/mongoose';
 import { CategoriaModule } from './categoria/categoria.module';
-import { Categoria } from './categoria/entities/categoria.entity';
+import { JogoModule } from './jogo/jogo.module';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'db_ecommerce_games',
-      entities: [Jogo, Categoria],
-      synchronize: true,
-      logging: true,
+    // 1. Configura o ConfigModule primeiro
+    ConfigModule.forRoot({
+      isGlobal: true, // Torna as variáveis de ambiente acessíveis globalmente
+      envFilePath: '.env', // Caminho do arquivo de variáveis de ambiente
     }),
-    JogoModule, CategoriaModule
+     // 2. MongooseModule agora usa o ConfigService para obter a URI
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: configService.get<string>('MONGO_URI'),      
+      }),
+      inject: [ConfigService], // Garante que ConfigService seja injetado no useFactory
+    }),
+    CategoriaModule,
+    JogoModule,
   ],
+
+  
   controllers: [],
   providers: [],
 })

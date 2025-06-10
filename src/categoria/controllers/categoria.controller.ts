@@ -1,8 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
-import { CategoriaService } from "../services/categoria.service";
-import { Categoria } from "../entities/categoria.entity";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Put, UseFilters } from '@nestjs/common';
+import { CategoriaService } from '../services/categoria.service';
+import { Categoria } from '../schemas/categoria.schema'; // Importa o esquema/modelo da categoria
+import { CreateCategoriaDto } from '../dto/create-categoria.dto';
+import { UpdateCategoriaDto } from '../dto/update-categoria.dto';
 
-@Controller("/categorias")
+
+@Controller("categoria")
 export class CategoriaController {
 
     constructor(
@@ -19,8 +22,7 @@ export class CategoriaController {
 
     @Get("/:id")
     @HttpCode(HttpStatus.OK)
-    //tem q transformar a string em Numero
-    findById(@Param("id", ParseIntPipe) id: number): Promise<Categoria> {
+    findById(@Param("id") id: string): Promise<Categoria> {
         return this.categoriaService.findById(id);
     }
 
@@ -32,19 +34,19 @@ export class CategoriaController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    create(@Body() categoria: Categoria): Promise<Categoria> {
-        return this.categoriaService.create(categoria);
+    create(@Body() dto: CreateCategoriaDto): Promise<Categoria> {
+        return this.categoriaService.create(dto);
     }
 
     @Put()
     @HttpCode(HttpStatus.OK)
-    update(@Body() categoria: Categoria): Promise<Categoria> {
-        return this.categoriaService.update(categoria);
+    update(@Body() dto: UpdateCategoriaDto): Promise<Categoria> {
+        return this.categoriaService.update(dto);
     }
 
     @Delete("/:id")
     @HttpCode(HttpStatus.NO_CONTENT)
-    delete(@Param("id", ParseIntPipe) id: number) {
+    delete(@Param("id") id: string) {
         return this.categoriaService.delete(id);
     }
 
